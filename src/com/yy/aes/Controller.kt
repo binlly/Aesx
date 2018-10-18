@@ -1,5 +1,6 @@
 package com.yy.aes
 
+import com.sun.javafx.collections.ObservableListWrapper
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.geometry.Insets
@@ -12,6 +13,7 @@ import javafx.scene.paint.Paint
 import java.io.File
 import java.net.URL
 import java.util.*
+import javax.crypto.Cipher
 
 /**
  * Created by binlly on 2018/10/16-16:48
@@ -73,6 +75,9 @@ class Controller: Initializable {
             }
             if (text.length >= 16) e.consume()
         }
+
+        choice_mode.items = ObservableListWrapper<String>(listOf("CBC", "GCM", "CFB", "OFB", "CTR", "OCB"))
+        choice_padding.items = ObservableListWrapper<String>(listOf("NoPadding", "PKCS1Padding", "PKCS5Padding", "PKCS7Padding", "ISO10126Padding"))
     }
 
     @FXML
@@ -85,6 +90,15 @@ class Controller: Initializable {
             return
         }
 
+        val mode = choice_mode.value
+        val padding = choice_padding.value
+        if (!checkAlgorithm(mode, padding)) {
+            alert.headerText = "出错了"
+            alert.contentText = "不支持（AES/$mode/$padding）"
+            alert.show()
+            return
+        }
+
         val content = originFile?.let {
             it.readLines().fold("") { acc, line -> "$line\n$acc" }
         } ?: text_input.text?.let {
@@ -93,9 +107,9 @@ class Controller: Initializable {
         text_origin.text = content
 
         val result = if (check_encdec.isSelected) {
-            AES.encryptString(content, key)
+            AES.encryptString(content, key, mode, padding)
         } else {
-            AES.decryptString(content, key)
+            AES.decryptString(content, key, mode, padding)
         }
         text_result.text = result
     }
@@ -103,5 +117,15 @@ class Controller: Initializable {
     private fun checkAesKey(key: String?): Boolean {
         if (key.isNullOrEmpty()) return false
         return key!!.length == 16
+    }
+
+    private fun checkAlgorithm(mode: String, padding: String): Boolean {
+        try {
+            Cipher.getInstance("AES/$mode/$padding")
+        } catch (e: Exception) {
+            alert
+            return false
+        }
+        return true
     }
 }

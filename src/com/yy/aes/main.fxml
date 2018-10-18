@@ -28,7 +28,7 @@
         </HBox>
 
         <HBox alignment="CENTER" prefHeight="49.0" prefWidth="689.0">
-            <TextField fx:id="text_key" prefHeight="38.0" prefWidth="437.0" text="AES Key 16 个字符">
+            <TextField fx:id="text_key" prefHeight="38.0" prefWidth="437.0" text="0123456789012345">
                 <font>
                     <Font size="14.0"/>
                 </font>
